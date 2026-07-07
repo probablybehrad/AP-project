@@ -4,7 +4,7 @@ import random
 pygame.init()
 screen = pygame.display.set_mode((1000,600))
 pygame.display.set_caption("shooter game")
-background = pygame.image.load("s_sonic_worldpage_hero_hz_3840x2160-54a03f41.jpg.webp")
+background = pygame.image.load("image/s_sonic_worldpage_hero_hz_3840x2160-54a03f41.jpg.webp")
 background = pygame.transform.scale(background, (1000,600))
 
 
@@ -37,10 +37,10 @@ class Target(GameObject):
 
     @staticmethod
     def random_pos(screen_width, screen_height,
-                   target_width, target_height,
-                   existing_targets,
-                   margin=20,
-                   min_distance=80):
+                    target_width, target_height,
+                    existing_targets,
+                    margin=20,
+                    min_distance=80):
 
         while True:
             x = random.randint(
@@ -90,11 +90,11 @@ class Target(GameObject):
 
 
 #نمونه
-player1 = Player("SRCTails.webp", 200, 200, 100, 480, "p1", 10, 60)
-player2 = Player("images.jpg", 280, 230, 900, 480, "p2", 10, 60)
+player1 = Player("image/SRCTails.webp", 200, 200, 100, 480, "p1", 10, 60)
+player2 = Player("image/images.jpg", 280, 230, 900, 480, "p2", 10, 60)
 
 targets = []
-images = ["bomb.png", "bomb1.png","bomb2.png"]
+images = ["image/bomb.png", "image/bomb1.png","image/bomb2.png"]
 for image in images:
     x, y = Target.random_pos(1000, 600, 60, 60, targets)
     targets.append(Target(image, 60, 60, x, y))
