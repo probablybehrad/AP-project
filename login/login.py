@@ -1,5 +1,5 @@
 import json
-from login.home import HomeWindow
+from home import HomeWindow
 import os
 
 print(os.getcwd())
@@ -7,8 +7,8 @@ print(os.getcwd())
 from PySide6.QtWidgets import (QWidget,QLabel,QLineEdit,QPushButton,QMessageBox,QVBoxLayout,QCheckBox,)
 from PySide6.QtGui import QPixmap, QFont
 from PySide6.QtCore import Qt
-from login.database import Database
-from login.register import RegisterWindow
+from database import Database
+from register import RegisterWindow
 
 
 class LoginWindow(QWidget):
@@ -18,7 +18,9 @@ class LoginWindow(QWidget):
 
         self.db = Database()
 
-        with open("config.json", "r", encoding="utf-8") as f:
+        import os
+        config_path = os.path.join(os.path.dirname(__file__), "config.json")
+        with open(config_path, "r", encoding="utf-8") as f:
             self.config = json.load(f)
 
         self.setWindowTitle(self.config["game_name"])

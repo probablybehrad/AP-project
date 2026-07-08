@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
 
-from login.database import Database
+from database import Database
 
 
 class RegisterWindow(QWidget):
