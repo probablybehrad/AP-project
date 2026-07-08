@@ -27,6 +27,39 @@ class Player(GameObject):
         self.bullet = bullet
         self.time = time
         self.score = 0
+        
+        self.cursor_x = random.randint(50, 950)
+        self.cursor_y = random.randint(50, 550)
+        self.cursor_visible = False
+        
+        self.shots = []
+        
+    def shoot(self):
+        if self.bullet > 0:
+            self.bullet -= 1
+            self.cursor_visible = True  
+            self.shots.append((self.cursor_x, self.cursor_y))
+            return True
+        return False
+    
+    def move_cursor(self, dx, dy):
+        self.cursor_x += dx
+        self.cursor_y += dy
+        self.cursor_x = max(20, min(980, self.cursor_x))
+        self.cursor_y = max(20, min(580, self.cursor_y))
+        self.cursor_visible = False
+    
+    def draw(self, screen):
+        super().draw(screen)
+        
+        if self.name == "p1" : color = pygame.Color("#F74825")
+        else: color = pygame.Color("#F73BBD")
+    
+        for shot_x, shot_y in self.shots:
+            pygame.draw.circle(screen, color, (shot_x, shot_y), 6)
+    
+        if self.cursor_visible:
+            pygame.draw.circle(screen, color, (self.cursor_x, self.cursor_y), 6)
 
 
 class Target(GameObject):
@@ -89,7 +122,7 @@ class Target(GameObject):
         self.is_active = True
 
 
-#نمونه
+#instance
 player1 = Player("image/SRCTails.webp", 200, 200, 100, 480, "p1", 10, 60)
 player2 = Player("image/images.jpg", 280, 230, 900, 480, "p2", 10, 60)
 
@@ -104,17 +137,52 @@ for image in images:
 def run_game():
     clock = pygame.time.Clock()
     running = True
+    font = pygame.font.SysFont(None, 36)
+
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            
+            #player1 movement
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    player1.shoot()
+                elif event.key == pygame.K_w:
+                    player1.move_cursor(0, -30)
+                elif event.key == pygame.K_s:
+                    player1.move_cursor(0, 30)
+                elif event.key == pygame.K_a:
+                    player1.move_cursor(-50, 0)
+                elif event.key == pygame.K_d:
+                    player1.move_cursor(50, 0)
+            
+            #player2 movement
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    player2.shoot()
+                elif event.key == pygame.K_UP:
+                    player2.move_cursor(0, -30)
+                elif event.key == pygame.K_DOWN:
+                    player2.move_cursor(0, 30)
+                elif event.key == pygame.K_LEFT:
+                    player2.move_cursor(-50, 0)
+                elif event.key == pygame.K_RIGHT:
+                    player2.move_cursor(50, 0)
 
+#draw
         screen.blit(background, (0,0))
         player1.draw(screen)
         player2.draw(screen)
         for target in targets:
             target.draw(screen)
 
+#bullet Count Display
+        txt1 = font.render(f"{player1.name}: {player1.bullet}", True, (255,255,255))
+        txt2 = font.render(f"{player2.name}: {player2.bullet}", True, (255,255,255))
+        screen.blit(txt1, (10, 10))
+        screen.blit(txt2, (10, 50))
         pygame.display.update()
         clock.tick(60)
 
