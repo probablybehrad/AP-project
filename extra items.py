@@ -299,7 +299,6 @@ def run_game():
     running = True
     font = pygame.font.SysFont(None, 36)
 
-
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -317,7 +316,7 @@ def run_game():
                     player1.move_cursor(-50, 0)
                 elif event.key == pygame.K_d:
                     player1.move_cursor(50, 0)
-            
+
             #player2 movement
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
