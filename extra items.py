@@ -247,7 +247,6 @@ class ExtraAimPowerUp(Target):
     def update(self, *args, **kwargs):
         # فعلاً رفتار خاصی ندارد.
         # در صورت نیاز می‌توان بعداً انیمیشن یا حرکت به آن اضافه کرد.
-
         pass
 
 
@@ -274,7 +273,6 @@ class ExtraTimePowerUp(Target):
     def update(self, *args, **kwargs):
        # فعلاً رفتار خاصی ندارد.
        # در صورت نیاز می‌توان بعداً انیمیشن یا حرکت به آن اضافه کرد.
-
         pass
 
 
