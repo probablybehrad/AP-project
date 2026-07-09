@@ -297,7 +297,7 @@ def check_game_over():
 def run_game():
     clock = pygame.time.Clock()
     running = True
-    font = pygame.font.SysFont(None, 36)
+    font = pygame.font.SysFont(None,36)
 
     while running:
         for event in pygame.event.get():
