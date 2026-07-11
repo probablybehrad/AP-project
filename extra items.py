@@ -11,7 +11,7 @@ background = pygame.transform.scale(background, (1000,600))
 
 
 def calculate_extra_points(last_shot_pos, new_shot_pos):
-   # محاسبه امتیاز اضافه بر اساس فاصله دو شلیک.
+# محاسبه امتیاز اضافه بر اساس فاصله دو شلیک.
 
     if last_shot_pos is None:
         return 0
@@ -88,7 +88,7 @@ class Player(GameObject):
         self.cursor_y = random.randint(50, 550)
         self.cursor_visible = False
         
-        self.shots = []
+        self.last_shot_pos = None 
 
     def add_time(self, sec):
         self.time += sec
@@ -96,23 +96,37 @@ class Player(GameObject):
     def add_bullets(self, amount):
         self.bullet += amount
 
+    def add_score(self, points: int):
+        self.score += points
+
         #کم کردن زمان بازیکن در هر فریم
+    #*
     def tick_time(self, dt):
-        self.time_left = max(0, self._time_left - dt)
+        self.time = max(0, self.time - dt)
+    
+    def shoot(self, targets: list, screen_width: int, screen_height: int):
+        if self.bullet <= 0:
+            return False, None, 0
 
-        self.player1.tick_time(dt)
-        self.player2.tick_time(dt)
-
-        if self.check_game_over():
-            self._running = False
-        
-    def shoot(self):
-        if self.bullet > 0:
-            self.bullet -= 1
-            self.cursor_visible = True  
-            self.shots.append((self.cursor_x, self.cursor_y))
-            return True
-        return False
+        self.bullet -= 1
+        self.cursor_visible = True
+        shot_pos = (self.cursor_x, self.cursor_y)
+        self.last_shot_pos = shot_pos
+    
+        for target in targets:
+            if target.is_active and check_collision(shot_pos, target):
+                base_score = target.score
+                extra = calculate_extra_points(self.last_shot_pos, shot_pos)
+                self.add_score(base_score + extra)
+                
+                target.deactivate()
+                target.respawn(screen_width, screen_height, targets)
+                
+                self.last_shot_pos = None
+                self.cursor_visible = False
+                
+                return True, target, extra
+        return False, None, 0
     
     def move_cursor(self, dx, dy):
         self.cursor_x += dx
@@ -127,7 +141,8 @@ class Player(GameObject):
         if self.name == "p1" : color = pygame.Color("#F74825")
         else: color = pygame.Color("#F73BBD")
     
-        for shot_x, shot_y in self.shots:
+        if self.last_shot_pos is not None:
+            shot_x, shot_y = self.last_shot_pos
             pygame.draw.circle(screen, color, (shot_x, shot_y), 6)
     
         if self.cursor_visible:
@@ -184,15 +199,13 @@ class Target(GameObject):
         return True
     
     def respawn(self, screen_width, screen_height, existing_targets):
-
         x, y = Target.random_pos(
             screen_width,
             screen_height,
-            self.rect.x,
-            self.rect.y,
+            self.rect.width,
+            self.rect.height,
             existing_targets
         )
-
         self.rect.center = (x, y)
         self.is_active = True
 
@@ -276,6 +289,12 @@ class ExtraTimePowerUp(Target):
         pass
 
 
+#collision
+def check_collision(shot_pos: tuple, target: Target):
+    if not target.is_active:
+        return False
+    return target.rect.collidepoint(shot_pos[0], shot_pos[1])
+
 #instance
 player1 = Player("image/SRCTails.webp", 200, 200, 100, 480, "p1", 10, 60)
 player2 = Player("image/images.jpg", 280, 230, 900, 480, "p2", 10, 60)
@@ -286,6 +305,9 @@ for image in images:
     x, y = Target.random_pos(1000, 600, 60, 60, targets)
     targets.append(Target(image, 60, 60, x, y))
 
+#*
+spawner = PowerUpSpawner(8.0)
+powerups = []
 
 def check_game_over():
     if (player1.time == 0 or player1.bullet == 0) and (player2.bullet == 0 or player2.time == 0):
@@ -300,6 +322,7 @@ def run_game():
     font = pygame.font.SysFont(None,36)
 
     while running:
+        dt = clock.tick(60) / 1000.0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -307,31 +330,50 @@ def run_game():
             #player1 movement
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    player1.shoot()
+                    player1.shoot(targets, 1000, 600)
+                    print("esp")
                 elif event.key == pygame.K_w:
                     player1.move_cursor(0, -30)
+                    print("w")
                 elif event.key == pygame.K_s:
                     player1.move_cursor(0, 30)
+                    print("s")
                 elif event.key == pygame.K_a:
                     player1.move_cursor(-50, 0)
+                    print("a")
                 elif event.key == pygame.K_d:
                     player1.move_cursor(50, 0)
+                    print("d")
 
             #player2 movement
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    player2.shoot()
+                    player2.shoot(targets, 1000, 600)
+                    print("esp")
                 elif event.key == pygame.K_UP:
                     player2.move_cursor(0, -30)
+                    print("u")
                 elif event.key == pygame.K_DOWN:
                     player2.move_cursor(0, 30)
+                    print("d")
                 elif event.key == pygame.K_LEFT:
                     player2.move_cursor(-50, 0)
+                    print("l")
                 elif event.key == pygame.K_RIGHT:
                     player2.move_cursor(50, 0)
+                    print("r")
+                    
+            
+        #*
+        player1.tick_time(dt)
+        player2.tick_time(dt)
+        #*
+        new_powerup = spawner.update(dt, 1000, 600, player1, player2)
+        if new_powerup:
+            powerups.append(new_powerup)
 
         if check_game_over():
-            running = False            
+            running = False           
 
 #draw
         screen.blit(background, (0,0))
@@ -341,8 +383,8 @@ def run_game():
             target.draw(screen)
 
 #bullet Count Display
-        txt1 = font.render(f"{player1.name}: {player1.bullet}", True, (255,255,255))
-        txt2 = font.render(f"{player2.name}: {player2.bullet}", True, (255,255,255))
+        txt1 = font.render(f"{player1.name}: bullets={player1.bullet} time={int(player1.time)} score={player1.score}", True, (255, 255, 255))
+        txt2 = font.render(f"{player2.name}: bullets={player2.bullet} time={int(player2.time)} score={player2.score}", True, (255, 255, 255))
         screen.blit(txt1, (10, 10))
         screen.blit(txt2, (10, 50))
         pygame.display.update()
