@@ -241,8 +241,8 @@ class ExtraAimPowerUp(Target):
     # آیتم خشاب اضافی.
     # با شلیک موفق، تعدادی تیر به بازیکن اضافه می‌شود.
 
-    def __init__(self, path, x: int, y: int, bullets_amount: int = 5):
-        super().__init__(path, x, y)
+    def __init__(self, path, x: int, y: int, x_center, y_center, bullets_amount: int = 5):
+        super().__init__(path, x, y, x_center, y_center)
         self._bullets_amount = bullets_amount
 
     @property
@@ -267,8 +267,8 @@ class ExtraTimePowerUp(Target):
    # آیتم زمان اضافی.
    # با شلیک موفق، زمان بازیکن افزایش پیدا می‌کند.
 
-    def __init__(self, path, x: int, y: int, seconds_amount: float = 10):
-        super().__init__(path, x, y)
+    def __init__(self, path, x: int, y: int, x_center, y_center, seconds_amount: float = 10):
+        super().__init__(path, x, y, x_center, y_center)
         self._seconds_amount = seconds_amount
 
     @property
@@ -298,6 +298,11 @@ def check_collision(shot_pos: tuple, target: Target):
 #instance
 player1 = Player("image/SRCTails.webp", 200, 200, 100, 480, "p1", 10, 60)
 player2 = Player("image/images.jpg", 280, 230, 900, 480, "p2", 10, 60)
+
+aim1 = ExtraAimPowerUp ("image/apple.png", 60, 60, 30, 110)
+aim2 = ExtraAimPowerUp ("image/apple.png", 60, 60, 100, 110)
+aim3 = ExtraAimPowerUp ("image/apple.png", 60, 60, 170, 110)
+time = ExtraTimePowerUp ("image/extra-time.png", 60, 60, 950, 40)
 
 targets = []
 images = ["image/bomb.png", "image/bomb1.png","image/bomb2.png"]
@@ -381,6 +386,10 @@ def run_game():
         player2.draw(screen)
         for target in targets:
             target.draw(screen)
+        aim1.draw(screen)
+        aim2.draw(screen)
+        aim3.draw(screen)
+        time.draw(screen)
 
 #bullet Count Display
         txt1 = font.render(f"{player1.name}: bullets={player1.bullet} time={int(player1.time)} score={player1.score}", True, (255, 255, 255))
