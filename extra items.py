@@ -6,7 +6,7 @@ import math
 pygame.init()
 screen = pygame.display.set_mode((1000,600))
 pygame.display.set_caption("shooter game")
-background = pygame.image.load("image/s_sonic_worldpage_hero_hz_3840x2160-54a03f41.jpg.webp")
+background = pygame.image.load("image/gamebackground.png")
 background = pygame.transform.scale(background, (1000,600))
 
 
@@ -66,7 +66,7 @@ class PowerUpSpawner:
 
 class GameObject:
     def __init__(self, path, x, y, x_center, y_center):
-        self.image = pygame.image.load(path)
+        self.image = pygame.image.load(path).convert_alpha()
         self.image = pygame.transform.scale(self.image, (x , y))
         self.rect = self.image.get_rect()
         self.rect.center = (x_center, y_center)
@@ -299,10 +299,10 @@ def check_collision(shot_pos: tuple, target: Target):
 player1 = Player("image/SRCTails.webp", 200, 200, 100, 480, "p1", 10, 60)
 player2 = Player("image/images.jpg", 280, 230, 900, 480, "p2", 10, 60)
 
-aim1 = ExtraAimPowerUp ("image/apple.png", 60, 60, 30, 110)
-aim2 = ExtraAimPowerUp ("image/apple.png", 60, 60, 100, 110)
-aim3 = ExtraAimPowerUp ("image/apple.png", 60, 60, 170, 110)
-time = ExtraTimePowerUp ("image/extra-time.png", 60, 60, 950, 40)
+aim1 = ExtraAimPowerUp ("image/blackaim.png", 60, 60, 30, 110)
+aim2 = ExtraAimPowerUp ("image/blackaim.png", 60, 60, 100, 110)
+aim3 = ExtraAimPowerUp ("image/blackaim.png", 60, 60, 170, 110)
+time = ExtraTimePowerUp ("image/blackaim.png", 60, 60, 950, 40)
 
 targets = []
 images = ["image/bomb.png", "image/bomb1.png","image/bomb2.png"]
