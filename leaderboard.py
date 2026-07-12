@@ -1,94 +1,137 @@
-import sqlite3
-import pygame
-import sys
+from PySide6.QtWidgets import (
+    QWidget,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+    QTableWidget,
+    QTableWidgetItem,
+    QHeaderView
+)
+from PySide6.QtGui import QFont
+from PySide6.QtCore import Qt
+
+from database import Database
 
 
-def init_db():
-    conn = sqlite3.connect('leaderboard.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS scores (id INTEGER PRIMARY KEY AUTOINCREMENT, player_name TEXT, score INTEGER
+class LeaderboardWindow(QWidget):
+
+    def __init__(self):
+        super().__init__()
+
+        self.db = Database()
+
+        self.setWindowTitle("Leaderboard")
+        self.resize(1000, 600)
+
+        self.build_ui()
+
+    def build_ui(self):
+
+        self.setStyleSheet("""
+        QWidget{
+            background:#211A3A;
+            color:white;
+        }
+        """)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(50,40,50,40)
+
+        # ---------- Title ----------
+
+        title = QLabel("🏆 LEADERBOARD")
+        title.setAlignment(Qt.AlignCenter)
+        title.setFont(QFont("Arial", 26, QFont.Bold))
+        title.setStyleSheet("""
+            background:#8E6AC8;
+            color:#FFF3D6;
+            border-radius:15px;
+            padding:15px;
+        """)
+
+        layout.addWidget(title)
+        layout.addSpacing(30)
+
+        # ---------- Table ----------
+
+        self.table = QTableWidget()
+
+        self.table.setColumnCount(3)
+        self.table.setHorizontalHeaderLabels(
+            ["Rank", "Username", "Score"]
         )
-    ''')
-    conn.commit()
-    conn.close()
 
+        self.table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.Stretch
+        )
 
-def save_score(name, score):
-    conn = sqlite3.connect('leaderboard.db')
-    cursor = conn.cursor()
-    cursor.execute(
-        'INSERT INTO leaderboard (player_name, score) VALUES (?, ?)', (name, score))
-    conn.commit()
-    conn.close()
+        self.table.setStyleSheet("""
+        QTableWidget{
+            background:white;
+            color:black;
+            border-radius:12px;
+            gridline-color:#CFCFCF;
+            font-size:15px;
+        }
 
+        QHeaderView::section{
+            background:#8E6AC8;
+            color:white;
+            padding:8px;
+            font-weight:bold;
+            border:none;
+        }
+        """)
 
-def get_top_scores(limit=5):
-    conn = sqlite3.connect('leaderboard.db')
-    cursor = conn.cursor()
-    cursor.execute(
-        'SELECT player_name, score FROM leaderboard ORDER BY score DESC LIMIT ?', (limit,))
-    results = cursor.fetchall()
-    conn.close()
-    return results
+        layout.addWidget(self.table)
 
+        layout.addSpacing(25)
 
-def show_leaderboard(screen):
-    try:
-        font = pygame.font.Font(r' ', 20)  # میتونیم فونت رو تغییر بدیم
-        title_font = pygame.font.Font(r' ', 30)
-    except:
-        font = pygame.font.Font(None, 20)
-        title_font = pygame.font.Font(None, 30)
+        # ---------- Back Button ----------
 
-    try:
-        bg = pygame.image.load(' ')  # عکس رو قرارمیدیم
-        bg = pygame.transform.scale(
-            bg, (screen.get_width(), screen.get_height()))
-    except:
-        bg = None
+        back_btn = QPushButton("Back")
 
-    scores = get_top_scores(5)
+        back_btn.setMinimumHeight(45)
 
-    running = True
-    while running:
-        # Draw background
-        if bg:
-            screen.blit(bg, (0, 0))
-        else:
-            screen.fill((50, 50, 70))  # این مقدار ها میتونن تغییر کنن
+        back_btn.setStyleSheet("""
+            QPushButton{
+                background:#F7D774;
+                color:#212A3A;
+                border-radius:12px;
+                font-size:18px;
+            }
 
-        # بخش دوم و سوم میتونن تغییر کنن
-        title = title_font.render("Leaderboard", True, (128, 0, 128))
-        # میتونه عوض بشه(موقعیت قرارگیری متن)
-        screen.blit(title, (screen.get_width()//2 - title.get_width()//2, 50))
+            QPushButton:hover{
+                background:#FFD54F;
+            }
+        """)
 
-        # Draw scores
-        y = 150  # موقعیت عمودی(قابل تغییر)
-        for i, (name, score) in enumerate(scores, 1):
-            color = (255, 215, 0) if i == 1 else (192, 192, 192) if i == 2 else (
-                205, 127, 50) if i == 3 else (255, 255, 255)
-            # رنگ هارو میتونیم عوض کنیم
-            text = font.render(f"{i}. {name}: {score}", True, color)
-            screen.blit(text, (screen.get_width()//2 -
-                        text.get_width()//2, y))  # قابل تغییر
-            y += 60
+        back_btn.clicked.connect(self.close)
 
-        # Instruction
-        inst = font.render("Press B to go back", True,
-                           (255, 0, 0))  # قابل تغییر
-        screen.blit(inst, (screen.get_width()//2 - inst.get_width() //
-                    2, screen.get_height() - 50))  # قابل تغییر
+        layout.addWidget(back_btn)
 
-        pygame.display.update()
+        self.setLayout(layout)
 
-        # کد خارج شدن از برنامه
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_b:
-                running = False
+        self.load_scores()
 
+    # ---------------------------------
 
-init_db()
+    def load_scores(self):
+
+        scores = self.db.get_top_scores()
+
+        self.table.setRowCount(len(scores))
+
+        for row, (username, score) in enumerate(scores):
+
+            rank = QTableWidgetItem(str(row + 1))
+            user = QTableWidgetItem(username)
+            points = QTableWidgetItem(str(score))
+
+            rank.setTextAlignment(Qt.AlignCenter)
+            user.setTextAlignment(Qt.AlignCenter)
+            points.setTextAlignment(Qt.AlignCenter)
+
+            self.table.setItem(row, 0, rank)
+            self.table.setItem(row, 1, user)
+            self.table.setItem(row, 2, points)
