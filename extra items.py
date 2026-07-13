@@ -308,7 +308,7 @@ for image in images:
     x, y = Target.random_pos(1000, 600, 60, 60, targets)
     targets.append(Target(image, 60, 60, x, y))
 
-spawner = PowerUpSpawner(8.0)
+spawner = PowerUpSpawner(13.0)
 powerups = []
 
 def check_game_over():
