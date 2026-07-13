@@ -61,7 +61,7 @@ class PowerUpSpawner:
 
         else:
             opponent = random.choice([player1, player2])
-            return OpponentDebuffPowerUp("image/skull.png", 60, 60, x, y, opponent=opponent)
+            return OpponentDebuffPowerUp("image/bullets.png", 60, 60, x, y, opponent=opponent)
 
 
 class GameObject:
@@ -302,25 +302,14 @@ def check_collision(shot_pos: tuple, target: Target):
 player1 = Player("image/SRCTails.webp", 200, 200, 100, 480, "p1", 10, 60)
 player2 = Player("image/images.jpg", 280, 230, 900, 480, "p2", 10, 60)
 
-aim1 = ExtraAimPowerUp ("image/apple.png", 60, 60, 30, 110)
-aim2 = ExtraAimPowerUp ("image/apple.png", 60, 60, 100, 110)
-aim3 = ExtraAimPowerUp ("image/apple.png", 60, 60, 170, 110)
-time = ExtraTimePowerUp ("image/extra-time.png", 60, 60, 950, 40)
-
 targets = []
 images = ["image/bomb.png", "image/bomb1.png","image/bomb2.png"]
 for image in images:
     x, y = Target.random_pos(1000, 600, 60, 60, targets)
     targets.append(Target(image, 60, 60, x, y))
 
-#*
 spawner = PowerUpSpawner(8.0)
-powerups = [
-    aim1,
-    aim2,
-    aim3,
-    time
-]
+powerups = []
 
 def check_game_over():
     if (player1.time == 0 or player1.bullet == 0) and (player2.bullet == 0 or player2.time == 0):
