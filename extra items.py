@@ -54,14 +54,14 @@ class PowerUpSpawner:
         powerup = random.choice(["aim", "time", "debuff"])
 
         if powerup == "aim":
-            return ExtraAimPowerUp(x, y)
+            return ExtraAimPowerUp("image/apple.png", 60, 60, x, y)
 
         elif powerup == "time":
-            return ExtraTimePowerUp(x, y)
+            return ExtraTimePowerUp("image/extra-time.png", 60, 60, x, y)
 
         else:
             opponent = random.choice([player1, player2])
-            return OpponentDebuffPowerUp(x, y, opponent=opponent)
+            return OpponentDebuffPowerUp("image/skull.png", 60, 60, x, y, opponent=opponent)
 
 
 class GameObject:
@@ -99,34 +99,37 @@ class Player(GameObject):
     def add_score(self, points: int):
         self.score += points
 
-        #کم کردن زمان بازیکن در هر فریم
-    #*
+    #کم کردن زمان بازیکن در هر فریم
     def tick_time(self, dt):
         self.time = max(0, self.time - dt)
     
-    def shoot(self, targets: list, screen_width: int, screen_height: int):
+    def shoot(self, targets, powerups, screen_width, screen_height):
         if self.bullet <= 0:
-            return False, None, 0
-
+            return False
+        
         self.bullet -= 1
         self.cursor_visible = True
         shot_pos = (self.cursor_x, self.cursor_y)
+        extra = calculate_extra_points(self.last_shot_pos, shot_pos)
         self.last_shot_pos = shot_pos
-    
+
+    # برخورد با تارگت‌ها
         for target in targets:
             if target.is_active and check_collision(shot_pos, target):
-                base_score = target.score
-                extra = calculate_extra_points(self.last_shot_pos, shot_pos)
-                self.add_score(base_score + extra)
-                
+                self.add_score(target.score + extra)
                 target.deactivate()
                 target.respawn(screen_width, screen_height, targets)
-                
-                self.last_shot_pos = None
-                self.cursor_visible = False
-                
-                return True, target, extra
-        return False, None, 0
+                return True
+
+    # برخورد با پاورآپ‌ها
+        for powerup in powerups:
+            if powerup.is_active and check_collision(shot_pos, powerup):
+                powerup.on_hit(self)
+                powerup.deactivate()
+                powerups.remove(powerup)
+                return True
+            
+        return False
     
     def move_cursor(self, dx, dy):
         self.cursor_x += dx
@@ -312,7 +315,12 @@ for image in images:
 
 #*
 spawner = PowerUpSpawner(8.0)
-powerups = []
+powerups = [
+    aim1,
+    aim2,
+    aim3,
+    time
+]
 
 def check_game_over():
     if (player1.time == 0 or player1.bullet == 0) and (player2.bullet == 0 or player2.time == 0):
@@ -335,7 +343,7 @@ def run_game():
             #player1 movement
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    player1.shoot(targets, 1000, 600)
+                    player1.shoot(targets, powerups, 1000, 600)
                     print("esp")
                 elif event.key == pygame.K_w:
                     player1.move_cursor(0, -30)
@@ -353,7 +361,7 @@ def run_game():
             #player2 movement
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    player2.shoot(targets, 1000, 600)
+                    player2.shoot(targets, powerups, 1000, 600)
                     print("esp")
                 elif event.key == pygame.K_UP:
                     player2.move_cursor(0, -30)
@@ -386,10 +394,9 @@ def run_game():
         player2.draw(screen)
         for target in targets:
             target.draw(screen)
-        aim1.draw(screen)
-        aim2.draw(screen)
-        aim3.draw(screen)
-        time.draw(screen)
+        for powerup in powerups:
+            if powerup.is_active:
+                powerup.draw(screen)
 
 #bullet Count Display
         txt1 = font.render(f"{player1.name}: bullets={player1.bullet} time={int(player1.time)} score={player1.score}", True, (255, 255, 255))
@@ -397,8 +404,15 @@ def run_game():
         screen.blit(txt1, (10, 10))
         screen.blit(txt2, (10, 50))
         pygame.display.update()
-        clock.tick(60)
 
     pygame.quit()
+
+    if player1.score > player2.score:
+        print("Player 1 Wins")
+    elif player2.score > player1.score:
+        print("Player 2 Wins")
+    else:
+        print("Draw")
+
 
 run_game()
