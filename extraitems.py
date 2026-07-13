@@ -6,7 +6,7 @@ import math
 pygame.init()
 screen = pygame.display.set_mode((1000,600))
 pygame.display.set_caption("shooter game")
-background = pygame.image.load("image/gamebackground.png")
+background = pygame.image.load("image/background.jpg")
 background = pygame.transform.scale(background, (1000,600))
 
 
@@ -66,7 +66,7 @@ class PowerUpSpawner:
 
 class GameObject:
     def __init__(self, path, x, y, x_center, y_center):
-        self.image = pygame.image.load(path).convert_alpha()
+        self.image = pygame.image.load(path)
         self.image = pygame.transform.scale(self.image, (x , y))
         self.rect = self.image.get_rect()
         self.rect.center = (x_center, y_center)
@@ -321,29 +321,7 @@ def check_game_over():
     
 
 #RUN 
-def run_game(player1_username, player2_username):
-    player1 = Player(
-    "image/SRCTails.webp",
-    200,
-    200,
-    100,
-    480,
-    player1_username,
-    10,
-    60
-)
-
-    player2 = Player(
-        "image/images.jpg",
-    280,
-    230,
-    900,
-    480,
-    player2_username,
-    10,
-    60
-    )
-    
+def run_game():
     clock = pygame.time.Clock()
     running = True
     font = pygame.font.SysFont(None,36)
@@ -423,12 +401,4 @@ def run_game(player1_username, player2_username):
 
     pygame.quit()
 
-    return (
-        player1.score,
-        player2.score
-    )
-
 run_game()
-
-if __name__ == "__main__":
-    run_game("Ali", "Sara")
