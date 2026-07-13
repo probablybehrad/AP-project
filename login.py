@@ -1,6 +1,7 @@
 import json
 import os
 import session
+from PySide6.QtGui import QPixmap
 
 from home import HomeWindow
 
@@ -39,16 +40,19 @@ class LoginWindow(QWidget):
     def build_ui(self):
 
         # ---------- Background ----------
+
         self.background = QLabel(self)
         self.background.setGeometry(0, 0, 1000, 600)
-        self.background.setStyleSheet("background-color:#211A3A;")
+        pixmap = QPixmap("image/backgroundlogin.jpeg")
+        self.background.setPixmap(pixmap)
+        self.background.setScaledContents(True) 
         self.background.lower()
 
         # ---------- Panel ----------
         self.panel = QWidget(self)
-        self.panel.setGeometry(50, 45, 400, 500)
+        self.panel.setGeometry(300, 120, 400, 350)
         self.panel.setStyleSheet("""
-            background:#8E6AC8;
+            background:rgba(247,88,162,140);
             border-radius:20px;
         """)
 
@@ -108,8 +112,8 @@ class LoginWindow(QWidget):
 
         login_btn.setStyleSheet("""
             QPushButton{
-                background:#E07BE0;
-                color:#212A3A;
+                background:rgb(0,51,0);
+                color:#F7D774;
                 border-radius:10px;
                 font-size:26px;
             }

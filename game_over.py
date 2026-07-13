@@ -7,21 +7,36 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap
+
 
 from leaderboard import LeaderboardWindow
-from database import Database
 
 
 class GameOverWindow(QWidget):
 
-    def __init__(self, username, score):
+    def __init__(
+        self,
+        player1_name,
+        player1_score,
+        player1_bullet,
+        player1_time,
+        player2_name,
+        player2_score,
+        player2_bullet,
+        player2_time
+    ):
         super().__init__()
 
-        self.username = username
-        self.score = score
+        self.player1_name = player1_name
+        self.player1_score = player1_score
+        self.player1_bullet = player1_bullet
+        self.player1_time = player1_time
 
-        self.db = Database()
-        self.db.save_score(username, score)
+        self.player2_name = player2_name
+        self.player2_score = player2_score
+        self.player2_bullet = player2_bullet
+        self.player2_time = player2_time
 
         self.setWindowTitle("Game Over")
         self.resize(1000, 600)
@@ -30,131 +45,146 @@ class GameOverWindow(QWidget):
 
     def build_ui(self):
 
-        self.setStyleSheet("""
-        QWidget{
-            background:#211A3A;
-            color:white;
-        }
+        # ---------- Background ----------
+
+        self.background = QLabel(self)
+        self.background.setGeometry(0, 0, 1000, 600)
+
+        pixmap = QPixmap("image/mainbackground.jpg")
+        self.background.setPixmap(
+            pixmap.scaled(
+                self.size(),
+                Qt.KeepAspectRatioByExpanding,
+                Qt.SmoothTransformation
+            )
+        )
+
+        self.background.lower()
+
+        # ---------- Panel ----------
+
+        self.panel = QWidget(self)
+        self.panel.setGeometry(300, 60, 400, 480)
+        self.panel.setStyleSheet("""
+            background:rgba(51,153,255,140);
+            border-radius:20px;
         """)
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
-        layout.setSpacing(20)
+        layout.setSpacing(12)
 
         # ---------- Title ----------
 
         title = QLabel("GAME OVER")
         title.setAlignment(Qt.AlignCenter)
-        title.setFont(QFont("Arial", 30, QFont.Bold))
+        title.setFont(QFont("Jersey 10", 32, QFont.Bold))
         title.setStyleSheet("""
-            background:#8E6AC8;
-            color:#FFF3D6;
-            border-radius:15px;
-            padding:15px;
+            color:rgb(150,0,0);
+            background:#211A3A;
+            border-radius:20px;
+            padding:12px;
         """)
 
         layout.addWidget(title)
+        layout.addSpacing(10)
 
-        # ---------- Username ----------
+        # ---------- Winner ----------
 
-        player = QLabel(f"Player : {self.username}")
-        player.setAlignment(Qt.AlignCenter)
-        player.setFont(QFont("Arial", 18))
+        if self.player1_score > self.player2_score:
+            winner = self.player1_name
+        elif self.player2_score > self.player1_score:
+            winner = self.player2_name
+        else:
+            winner = "DRAW"
 
-        layout.addWidget(player)
+        winner_label = QLabel(f"🏆{winner}🏆")
+        winner_label.setAlignment(Qt.AlignCenter)
+        winner_label.setFont(QFont("Jersey 10", 22, QFont.Bold))
+        winner_label.setStyleSheet("color:#FFD54F;")
 
-        # ---------- Score ----------
+        layout.addWidget(winner_label)
+        layout.addSpacing(10)
 
-        score = QLabel(f"Score : {self.score}")
-        score.setAlignment(Qt.AlignCenter)
-        score.setFont(QFont("Arial", 22, QFont.Bold))
-        score.setStyleSheet("color:#FFD54F;")
+        # ---------- Player 1 ----------
 
-        layout.addWidget(score)
-
-        layout.addSpacing(30)
-
-        # ---------- Leaderboard ----------
-
-        leaderboard_btn = QPushButton("Leaderboard")
-        leaderboard_btn.setMinimumHeight(45)
-
-        leaderboard_btn.setStyleSheet("""
-        QPushButton{
-            background:#8E6AC8;
-            color:white;
-            border-radius:12px;
-            font-size:18px;
-        }
-
-        QPushButton:hover{
-            background:#A57AE6;
-        }
+        p1 = QLabel(
+    f"""
+    Player 1 : {self.player1_name}
+    Score : {self.player1_score}
         """)
 
-        leaderboard_btn.clicked.connect(self.open_leaderboard)
+        p1.setAlignment(Qt.AlignCenter)
+        p1.setFont(QFont("Jersey 10", 16))
+        layout.addWidget(p1)
 
-        layout.addWidget(leaderboard_btn)
+        # ---------- Player 2 ----------
 
-        # ---------- Restart ----------
+        p2 = QLabel(
+    f"""
+    Player 2 : {self.player2_name}
+    Score : {self.player2_score}
+         """)
+
+        p2.setAlignment(Qt.AlignCenter)
+        p2.setFont(QFont("Jersey 10", 16))
+
+        layout.addWidget(p2)
+
+        layout.addSpacing(20)
+
+        # ---------- restart ----------
 
         restart_btn = QPushButton("Restart")
         restart_btn.setMinimumHeight(45)
-
-        restart_btn.setStyleSheet("""
-        QPushButton{
-            background:#4CAF50;
-            color:white;
-            border-radius:12px;
-            font-size:18px;
-        }
-
-        QPushButton:hover{
-            background:#66BB6A;
-        }
-        """)
-
         restart_btn.clicked.connect(self.restart_game)
-
-        layout.addWidget(restart_btn)
-
         # ---------- Exit ----------
 
         exit_btn = QPushButton("Exit")
         exit_btn.setMinimumHeight(45)
-
-        exit_btn.setStyleSheet("""
-        QPushButton{
-            background:#E53935;
-            color:white;
-            border-radius:12px;
-            font-size:18px;
-        }
-
-        QPushButton:hover{
-            background:#EF5350;
-        }
-        """)
-
         exit_btn.clicked.connect(QApplication.quit)
 
-        layout.addWidget(exit_btn)
+        for btn in [restart_btn, exit_btn]:
+            btn.setStyleSheet("""
+                QPushButton{
+                    background:#000066;
+                    color:white;
+                    border-radius:10px;
+                    font-size:15px;
+                    padding:10px;
+                }
 
-        self.setLayout(layout)
+                QPushButton:hover{
+                    background:#1976D2;
+                }
+            """)
+            layout.addWidget(btn)
 
-    # ------------------------
-
-    def open_leaderboard(self):
-
-        self.lb = LeaderboardWindow()
-        self.lb.show()
-
-    # ------------------------
-
+        self.panel.setLayout(layout)
+    
     def restart_game(self):
+
+        from extra_items import run_game
 
         self.close()
 
-        # بعداً اینجا بازی دوباره اجرا می‌شود
-        # from game import run_game
-        # run_game(self.username)
+        result = run_game(
+            self.player1_name,
+            self.player2_name
+        )
+
+        self.game_over = GameOverWindow(
+            result["player1_name"],
+            result["player1_score"],
+            result["player1_bullet"],
+            result["player1_time"],
+
+            result["player2_name"],
+            result["player2_score"],
+            result["player2_bullet"],
+            result["player2_time"]
+        )
+
+        self.game_over.show()
+
+

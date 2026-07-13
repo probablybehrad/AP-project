@@ -1,12 +1,13 @@
 import pygame
 import random
 import math
+from database import Database
 
 
 pygame.init()
 screen = pygame.display.set_mode((1000,600))
 pygame.display.set_caption("shooter game")
-background = pygame.image.load("image/background.jpg")
+background = pygame.image.load("image/mainbackground.jpg")
 background = pygame.transform.scale(background, (1000,600))
 
 
@@ -54,14 +55,14 @@ class PowerUpSpawner:
         powerup = random.choice(["aim", "time", "debuff"])
 
         if powerup == "aim":
-            return ExtraAimPowerUp(x, y)
+            return ExtraAimPowerUp("image/extra.PNG", 60, 60, x, y)
 
         elif powerup == "time":
-            return ExtraTimePowerUp(x, y)
+            return ExtraTimePowerUp("image/extra-time.png", 60, 60, x, y)
 
         else:
             opponent = random.choice([player1, player2])
-            return OpponentDebuffPowerUp(x, y, opponent=opponent)
+            return OpponentDebuffPowerUp("image/bullets.png", 60, 60, x, y, opponent=opponent)
 
 
 class GameObject:
@@ -99,34 +100,37 @@ class Player(GameObject):
     def add_score(self, points: int):
         self.score += points
 
-        #کم کردن زمان بازیکن در هر فریم
-    #*
+    #کم کردن زمان بازیکن در هر فریم
     def tick_time(self, dt):
         self.time = max(0, self.time - dt)
     
-    def shoot(self, targets: list, screen_width: int, screen_height: int):
+    def shoot(self, targets, powerups, screen_width, screen_height):
         if self.bullet <= 0:
-            return False, None, 0
-
+            return False
+        
         self.bullet -= 1
         self.cursor_visible = True
         shot_pos = (self.cursor_x, self.cursor_y)
+        extra = calculate_extra_points(self.last_shot_pos, shot_pos)
         self.last_shot_pos = shot_pos
-    
+
+    # برخورد با تارگت‌ها
         for target in targets:
             if target.is_active and check_collision(shot_pos, target):
-                base_score = target.score
-                extra = calculate_extra_points(self.last_shot_pos, shot_pos)
-                self.add_score(base_score + extra)
-                
+                self.add_score(target.score + extra)
                 target.deactivate()
                 target.respawn(screen_width, screen_height, targets)
-                
-                self.last_shot_pos = None
-                self.cursor_visible = False
-                
-                return True, target, extra
-        return False, None, 0
+                return True
+
+    # برخورد با پاورآپ‌ها
+        for powerup in powerups:
+            if powerup.is_active and check_collision(shot_pos, powerup):
+                powerup.on_hit(self)
+                powerup.deactivate()
+                powerups.remove(powerup)
+                return True
+            
+        return False
     
     def move_cursor(self, dx, dy):
         self.cursor_x += dx
@@ -136,7 +140,7 @@ class Player(GameObject):
         self.cursor_visible = False
     
     def draw(self, screen):
-        super().draw(screen)
+        #super().draw(screen)
         
         if self.name == "p1" : color = pygame.Color("#F74825")
         else: color = pygame.Color("#F73BBD")
@@ -214,8 +218,8 @@ class OpponentDebuffPowerUp(Target):
    # آیتم منفی.
    # با شلیک به این آیتم، زمان حریف کاهش پیدا می‌کند.
 
-    def __init__(self, path, x, y, opponent=None, penalty_time=3):
-        super().__init__(path, x, y)
+    def __init__(self, path, x, y, x_center, y_center, opponent=None, penalty_time=3):
+        super().__init__(path, x, y, x_center, y_center)
         self._opponent = opponent
         self._penalty_time = penalty_time
 
@@ -299,19 +303,13 @@ def check_collision(shot_pos: tuple, target: Target):
 player1 = Player("image/SRCTails.webp", 200, 200, 100, 480, "p1", 10, 60)
 player2 = Player("image/images.jpg", 280, 230, 900, 480, "p2", 10, 60)
 
-aim1 = ExtraAimPowerUp ("image/blackaim.png", 60, 60, 30, 110)
-aim2 = ExtraAimPowerUp ("image/blackaim.png", 60, 60, 100, 110)
-aim3 = ExtraAimPowerUp ("image/blackaim.png", 60, 60, 170, 110)
-time = ExtraTimePowerUp ("image/blackaim.png", 60, 60, 950, 40)
-
 targets = []
-images = ["image/bomb.png", "image/bomb1.png","image/bomb2.png"]
+images = ["image/fish1.PNG", "image/fish3.PNG","image/fish3.PNG"]
 for image in images:
     x, y = Target.random_pos(1000, 600, 60, 60, targets)
     targets.append(Target(image, 60, 60, x, y))
 
-#*
-spawner = PowerUpSpawner(8.0)
+spawner = PowerUpSpawner(13.0)
 powerups = []
 
 def check_game_over():
@@ -321,10 +319,13 @@ def check_game_over():
     
 
 #RUN 
-def run_game():
+def run_game(player1_name, player2_name):
+    
     clock = pygame.time.Clock()
     running = True
     font = pygame.font.SysFont(None,36)
+    player1.name = player1_name
+    player2.name = player2_name
 
     while running:
         dt = clock.tick(60) / 1000.0
@@ -335,7 +336,7 @@ def run_game():
             #player1 movement
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    player1.shoot(targets, 1000, 600)
+                    player1.shoot(targets, powerups, 1000, 600)
                     print("esp")
                 elif event.key == pygame.K_w:
                     player1.move_cursor(0, -30)
@@ -353,7 +354,7 @@ def run_game():
             #player2 movement
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    player2.shoot(targets, 1000, 600)
+                    player2.shoot(targets, powerups, 1000, 600)
                     print("esp")
                 elif event.key == pygame.K_UP:
                     player2.move_cursor(0, -30)
@@ -382,14 +383,15 @@ def run_game():
 
 #draw
         screen.blit(background, (0,0))
+
         player1.draw(screen)
         player2.draw(screen)
+
         for target in targets:
             target.draw(screen)
-        aim1.draw(screen)
-        aim2.draw(screen)
-        aim3.draw(screen)
-        time.draw(screen)
+        for powerup in powerups:
+            if powerup.is_active:
+                powerup.draw(screen)
 
 #bullet Count Display
         txt1 = font.render(f"{player1.name}: bullets={player1.bullet} time={int(player1.time)} score={player1.score}", True, (255, 255, 255))
@@ -397,8 +399,29 @@ def run_game():
         screen.blit(txt1, (10, 10))
         screen.blit(txt2, (10, 50))
         pygame.display.update()
-        clock.tick(60)
 
     pygame.quit()
 
-run_game()
+    db = Database()
+
+    db.save_score(player1.name, player1.score)
+    db.save_score(player2.name, player2.score)
+
+    db.save_game_result(
+        player1.name,
+        player1.score,
+        player2.name,
+        player2.score
+    )
+
+    return {
+        "player1_name": player1.name,
+        "player1_score": player1.score,
+        "player1_bullet": player1.bullet,
+        "player1_time": int(player1.time),
+
+        "player2_name": player2.name,
+        "player2_score": player2.score,
+        "player2_bullet": player2.bullet,
+        "player2_time": int(player2.time),
+    }

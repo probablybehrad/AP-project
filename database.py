@@ -1,21 +1,13 @@
 import sqlite3
 import hashlib
 
+
 class Database:
     def __init__(self):
         self.conn = sqlite3.connect("users.db")
         self.cursor = self.conn.cursor()
 
-        self.cursor.execute("""
-        CREATE TABLE IF NOT EXISTS scores(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            score INTEGER NOT NULL
-        )
-        """)
-
-        self.conn.commit()
-
+        # ---------- Users ----------
         self.cursor.execute("""
         CREATE TABLE IF NOT EXISTS users(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,13 +17,35 @@ class Database:
         )
         """)
 
+        # ---------- Scores ----------
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS scores(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            score INTEGER NOT NULL
+        )
+        """)
+
+        # ---------- Games ----------
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS games(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            player1 TEXT NOT NULL,
+            score1 INTEGER NOT NULL,
+            player2 TEXT NOT NULL,
+            score2 INTEGER NOT NULL
+        )
+        """)
+
         self.conn.commit()
 
-    # هش کردن رمز
+    # ---------------- Password ----------------
+
     def hash_password(self, password):
         return hashlib.sha256(password.encode()).hexdigest()
 
-    # ثبت نام
+    # ---------------- Register ----------------
+
     def register(self, fullname, username, password):
 
         password = self.hash_password(password)
@@ -48,42 +62,46 @@ class Database:
         except sqlite3.IntegrityError:
             return False
 
-    # ورود
+    # ---------------- Login ----------------
+
     def login(self, username, password):
 
         password = self.hash_password(password)
 
         self.cursor.execute("""
-        SELECT * FROM users
+        SELECT *
+        FROM users
         WHERE username=? AND password=?
         """, (username, password))
 
-        user = self.cursor.fetchone()
+        return self.cursor.fetchone()
 
-        return user
+    # ---------------- User Exists ----------------
 
-    # بررسی وجود کاربر
     def user_exists(self, username):
 
         self.cursor.execute("""
-        SELECT id FROM users
+        SELECT id
+        FROM users
         WHERE username=?
         """, (username,))
 
         return self.cursor.fetchone() is not None
 
-    # دریافت اطلاعات کاربر
+    # ---------------- Get User ----------------
+
     def get_user(self, username):
 
         self.cursor.execute("""
-        SELECT fullname,username
+        SELECT fullname, username
         FROM users
         WHERE username=?
         """, (username,))
 
         return self.cursor.fetchone()
 
-    # تغییر رمز
+    # ---------------- Change Password ----------------
+
     def change_password(self, username, new_password):
 
         new_password = self.hash_password(new_password)
@@ -96,7 +114,8 @@ class Database:
 
         self.conn.commit()
 
-    # حذف کاربر
+    # ---------------- Delete User ----------------
+
     def delete_user(self, username):
 
         self.cursor.execute("""
@@ -106,16 +125,20 @@ class Database:
 
         self.conn.commit()
 
-    # لیست کاربران
+    # ---------------- All Users ----------------
+
     def get_all_users(self):
 
         self.cursor.execute("""
-        SELECT fullname,username
+        SELECT fullname, username
         FROM users
         ORDER BY fullname
         """)
 
         return self.cursor.fetchall()
+
+    # ---------------- Save Score ----------------
+
     def save_score(self, username, score):
 
         self.cursor.execute("""
@@ -124,6 +147,20 @@ class Database:
         """, (username, score))
 
         self.conn.commit()
+
+    # ---------------- Save Game Result ----------------
+
+    def save_game_result(self, player1, score1, player2, score2):
+
+        self.cursor.execute("""
+        INSERT INTO games(player1, score1, player2, score2)
+        VALUES (?, ?, ?, ?)
+        """, (player1, score1, player2, score2))
+
+        self.conn.commit()
+
+    # ---------------- Leaderboard ----------------
+
     def get_top_scores(self, limit=10):
 
         self.cursor.execute("""
@@ -134,7 +171,9 @@ class Database:
         """, (limit,))
 
         return self.cursor.fetchall()
-    
+
+    # ---------------- Best Score ----------------
+
     def get_best_score(self, username):
 
         self.cursor.execute("""
@@ -149,7 +188,9 @@ class Database:
             return 0
 
         return result[0]
-    # بستن دیتابیس
+
+    # ---------------- Close ----------------
+
     def close(self):
         self.conn.close()
 
@@ -171,3 +212,5 @@ if __name__ == "__main__":
         print("Login Success")
     else:
         print("Wrong Username Or Password")
+
+    db.close()

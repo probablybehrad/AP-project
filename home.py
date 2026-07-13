@@ -7,7 +7,8 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
-
+from PySide6.QtGui import QPixmap
+from game_over import GameOverWindow
 
 class HomeWindow(QWidget):
 
@@ -24,26 +25,73 @@ class HomeWindow(QWidget):
 
         self.build_ui()
 
+    def start_game(self):
+
+        self.hide()
+
+        from extra_items import run_game
+
+        result = run_game(
+            self.player1["username"],
+            self.player2["username"]
+        )
+
+        self.game_over = GameOverWindow(
+            result["player1_name"],
+            result["player1_score"],
+            result["player1_bullet"],
+            result["player1_time"],
+
+            result["player2_name"],
+            result["player2_score"],
+            result["player2_bullet"],
+            result["player2_time"]
+        )
+
+        self.game_over.show()
+
+        self.close()
+
     def build_ui(self):
+        self.background = QLabel(self)
+        self.background.setGeometry(0, 0, 1000, 600)
+
+        pixmap = QPixmap("image/backgroundlogin.jpeg")
+        self.background.setPixmap(
+            pixmap.scaled(
+                self.size(),
+                Qt.KeepAspectRatioByExpanding,
+                Qt.SmoothTransformation
+            )
+        )
+
+        self.background.lower()
+        # ---------- Panel ----------
+        self.panel = QWidget(self)
+        self.panel.setGeometry(300, 120, 400, 380)
+        self.panel.setStyleSheet("""
+            background:rgba(247,88,162,140);
+            border-radius:20px;
+        """)
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
 
         title = QLabel("Welcome")
-        title.setFont(QFont("Arial", 24, QFont.Bold))
+        title.setFont(QFont("Jersey 10", 54, QFont.Bold))
         title.setAlignment(Qt.AlignCenter)
 
         p1 = QLabel(
             f"Player 1 : {self.player1['fullname']} ({self.player1['username']})"
         )
         p1.setAlignment(Qt.AlignCenter)
-        p1.setFont(QFont("Arial", 16))
+        p1.setFont(QFont("Jersey 10", 16))
 
         p2 = QLabel(
             f"Player 2 : {self.player2['fullname']} ({self.player2['username']})"
         )
         p2.setAlignment(Qt.AlignCenter)
-        p2.setFont(QFont("Arial", 16))
+        p2.setFont(QFont("Jersey 10", 16))
 
         layout.addWidget(title)
         layout.addSpacing(20)
@@ -63,12 +111,6 @@ class HomeWindow(QWidget):
         profile_btn.setMinimumHeight(45)
         profile_btn.clicked.connect(self.profile)
 
-        # ---------- Settings ----------
-
-        settings_btn = QPushButton("Settings")
-        settings_btn.setMinimumHeight(45)
-        settings_btn.clicked.connect(self.settings)
-
         # ---------- Logout ----------
 
         logout_btn = QPushButton("Logout")
@@ -78,7 +120,6 @@ class HomeWindow(QWidget):
         buttons = [
             start_btn,
             profile_btn,
-            settings_btn,
             logout_btn
         ]
 
@@ -100,19 +141,6 @@ class HomeWindow(QWidget):
             layout.addWidget(btn)
 
         self.setLayout(layout)
-
-    # -----------------------------
-
-    def start_game(self):
-
-        self.hide()
-
-        from extraitems import run_game
-
-        run_game(
-            self.player1["username"],
-            self.player2["username"]
-        )
 
     # -----------------------------
 
