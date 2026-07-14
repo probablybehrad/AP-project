@@ -6,7 +6,7 @@ from database import Database
 
 pygame.init()
 screen = pygame.display.set_mode((1000,600))
-pygame.display.set_caption("shooter game")
+pygame.display.set_caption("Fish Pop")
 background = pygame.image.load("image/mainbackground.jpg")
 background = pygame.transform.scale(background, (1000,600))
 
@@ -55,14 +55,14 @@ class PowerUpSpawner:
         powerup = random.choice(["aim", "time", "debuff"])
 
         if powerup == "aim":
-            return ExtraAimPowerUp("image/extra.PNG", 60, 60, x, y)
+            return ExtraAimPowerUp("image/extraaim.PNG", 70, 70, x, y)
 
         elif powerup == "time":
-            return ExtraTimePowerUp("image/extra-time.png", 60, 60, x, y)
+            return ExtraTimePowerUp("image/extratime.png", 70, 70, x, y)
 
         else:
             opponent = random.choice([player1, player2])
-            return OpponentDebuffPowerUp("image/bullets.png", 60, 60, x, y, opponent=opponent)
+            return OpponentDebuffPowerUp("image/oppent.png", 85, 90, x, y, opponent=opponent)
 
 
 class GameObject:
@@ -304,10 +304,10 @@ player1 = Player("image/SRCTails.webp", 200, 200, 100, 480, "p1", 10, 60)
 player2 = Player("image/images.jpg", 280, 230, 900, 480, "p2", 10, 60)
 
 targets = []
-images = ["image/fish1.PNG", "image/fish3.PNG","image/fish3.PNG"]
+images = ["image/fish1.PNG", "image/fish2.PNG","image/fish3.PNG", "image/fish4.PNG"]
 for image in images:
-    x, y = Target.random_pos(1000, 600, 60, 60, targets)
-    targets.append(Target(image, 60, 60, x, y))
+    x, y = Target.random_pos(1000, 600, 90, 90, targets)
+    targets.append(Target(image, 90, 90, x, y))
 
 spawner = PowerUpSpawner(13.0)
 powerups = []

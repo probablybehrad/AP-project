@@ -66,7 +66,7 @@ class GameOverWindow(QWidget):
         self.panel = QWidget(self)
         self.panel.setGeometry(300, 60, 400, 480)
         self.panel.setStyleSheet("""
-            background:rgba(51,153,255,140);
+            background:rgba(48,158,171,140);
             border-radius:20px;
         """)
 
@@ -101,16 +101,18 @@ class GameOverWindow(QWidget):
         winner_label = QLabel(f"🏆{winner}🏆")
         winner_label.setAlignment(Qt.AlignCenter)
         winner_label.setFont(QFont("Jersey 10", 22, QFont.Bold))
-        winner_label.setStyleSheet("color:#FFD54F;")
-
+        winner_label.setStyleSheet(""" color:rgb(150,0,0);
+            background:#FFD54F;
+            border-radius:20px;
+            padding:12px;
+                                   """)
         layout.addWidget(winner_label)
         layout.addSpacing(10)
 
         # ---------- Player 1 ----------
 
         p1 = QLabel(
-    f"""
-    Player 1 : {self.player1_name}
+    f"""Player 1 : {self.player1_name}
     Score : {self.player1_score}
         """)
 
@@ -121,8 +123,7 @@ class GameOverWindow(QWidget):
         # ---------- Player 2 ----------
 
         p2 = QLabel(
-    f"""
-    Player 2 : {self.player2_name}
+    f"""Player 2 : {self.player2_name}
     Score : {self.player2_score}
          """)
 

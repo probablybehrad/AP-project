@@ -56,7 +56,7 @@ class HomeWindow(QWidget):
         self.background = QLabel(self)
         self.background.setGeometry(0, 0, 1000, 600)
 
-        pixmap = QPixmap("image/backgroundlogin.jpeg")
+        pixmap = QPixmap("image/mainbackground.jpg")
         self.background.setPixmap(
             pixmap.scaled(
                 self.size(),
