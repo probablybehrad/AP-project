@@ -1,6 +1,0 @@
-pygame
-random
-math
-PySide6
-os
-
