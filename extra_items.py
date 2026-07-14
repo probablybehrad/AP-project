@@ -5,6 +5,7 @@ from database import Database
 
 
 pygame.init()
+pygame.mixer.init()
 screen = pygame.display.set_mode((1000,600))
 pygame.display.set_caption("Fish Pop")
 background = pygame.image.load("image/mainbackground.jpg")
@@ -55,7 +56,7 @@ class PowerUpSpawner:
         powerup = random.choice(["aim", "time", "debuff"])
 
         if powerup == "aim":
-            return ExtraAimPowerUp("image/extraaim.PNG", 70, 70, x, y)
+            return ExtraAimPowerUp("image/extraaim.png", 70, 70, x, y)
 
         elif powerup == "time":
             return ExtraTimePowerUp("image/extratime.png", 70, 70, x, y)
@@ -109,6 +110,7 @@ class Player(GameObject):
             return False
         
         self.bullet -= 1
+        shoot_sound.play()
         self.cursor_visible = True
         shot_pos = (self.cursor_x, self.cursor_y)
         extra = calculate_extra_points(self.last_shot_pos, shot_pos)
@@ -304,13 +306,29 @@ player1 = Player("image/SRCTails.webp", 200, 200, 100, 480, "p1", 10, 60)
 player2 = Player("image/images.jpg", 280, 230, 900, 480, "p2", 10, 60)
 
 targets = []
-images = ["image/fish1.PNG", "image/fish2.PNG","image/fish3.PNG", "image/fish4.PNG"]
+images = ["image/fish1.PNG", "image/fish2.PNG","image/fish3.PNG", "image/fish4.png"]
 for image in images:
     x, y = Target.random_pos(1000, 600, 90, 90, targets)
     targets.append(Target(image, 90, 90, x, y))
 
 spawner = PowerUpSpawner(13.0)
 powerups = []
+
+bullet_icon = pygame.image.load("image/bullet.png")
+bullet_icon = pygame.transform.scale(bullet_icon, (45,60))
+
+time_icon = pygame.image.load("image/time.png")
+time_icon = pygame.transform.scale(time_icon, (45,60))
+
+score_icon = pygame.image.load("image/score.png")
+score_icon = pygame.transform.scale(score_icon, (50,60))
+
+pygame.mixer.music.load("sounds/backgroundsound.mp3")
+pygame.mixer.music.set_volume(0.3) 
+pygame.mixer.music.play(-1)
+
+shoot_sound = pygame.mixer.Sound("sounds/bulletsound.mp3")
+shoot_sound.set_volume(0.3)
 
 def check_game_over():
     if (player1.time == 0 or player1.bullet == 0) and (player2.bullet == 0 or player2.time == 0):
@@ -394,10 +412,32 @@ def run_game(player1_name, player2_name):
                 powerup.draw(screen)
 
 #bullet Count Display
+        """
         txt1 = font.render(f"{player1.name}: bullets={player1.bullet} time={int(player1.time)} score={player1.score}", True, (255, 255, 255))
         txt2 = font.render(f"{player2.name}: bullets={player2.bullet} time={int(player2.time)} score={player2.score}", True, (255, 255, 255))
         screen.blit(txt1, (10, 10))
         screen.blit(txt2, (10, 50))
+        """
+        screen.blit(bullet_icon, (10,10))
+        screen.blit(time_icon, (120,10))
+        screen.blit(score_icon, (230,10))
+        txt = font.render(str(player1.bullet), True, (255,255,255))
+        screen.blit(txt, (50,15))
+        txt = font.render(str(int(player1.time)), True, (255,255,255))
+        screen.blit(txt, (160,15))
+        txt = font.render(str(player1.score), True, (255,255,255))
+        screen.blit(txt, (270,15))
+
+        screen.blit(bullet_icon, (660,10))
+        screen.blit(time_icon, (770,10))
+        screen.blit(score_icon, (865,10))
+        txt = font.render(str(player2.bullet), True, (255,255,255))
+        screen.blit(txt, (700,15))
+        txt = font.render(str(int(player2.time)), True, (255,255,255))
+        screen.blit(txt, (810,15))
+        txt = font.render(str(player2.score), True, (255,255,255))
+        screen.blit(txt, (910,20))
+
         pygame.display.update()
 
     pygame.quit()

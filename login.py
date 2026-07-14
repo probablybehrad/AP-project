@@ -32,7 +32,7 @@ class LoginWindow(QWidget):
         with open(config_path, "r", encoding="utf-8") as f:
             self.config = json.load(f)
 
-        self.setWindowTitle(self.config["game_name"])
+        self.setWindowTitle("Fish Pop")
         self.resize(1000, 600)
 
         self.build_ui()
@@ -59,7 +59,7 @@ class LoginWindow(QWidget):
         layout = QVBoxLayout()
 
         # ---------- Title ----------
-        title = QLabel(self.config["game_name"])
+        title = QLabel("Fish Pop")
         title.setAlignment(Qt.AlignCenter)
         title.setFont(QFont("Jersey 10", 30, QFont.Bold))
         title.setStyleSheet("""

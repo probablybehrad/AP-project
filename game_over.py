@@ -136,16 +136,16 @@ class GameOverWindow(QWidget):
 
         # ---------- restart ----------
 
-        restart_btn = QPushButton("Restart")
+        '''restart_btn = QPushButton("Restart")
         restart_btn.setMinimumHeight(45)
-        restart_btn.clicked.connect(self.restart_game)
+        restart_btn.clicked.connect(self.restart_game)'''
         # ---------- Exit ----------
 
         exit_btn = QPushButton("Exit")
         exit_btn.setMinimumHeight(45)
         exit_btn.clicked.connect(QApplication.quit)
 
-        for btn in [restart_btn, exit_btn]:
+        for btn in [exit_btn]:
             btn.setStyleSheet("""
                 QPushButton{
                     background:#000066;
