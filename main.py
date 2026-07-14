@@ -7,6 +7,7 @@ from login import LoginWindow
 
 app = QApplication(sys.argv)
 
+
 window = LoginWindow()
 
 window.show()

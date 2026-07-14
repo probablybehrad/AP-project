@@ -50,8 +50,8 @@ class PowerUpSpawner:
 
         self._elapsed = 0
 
-        x = random.randint(20, screen_width - 70)
-        y = random.randint(20, screen_height - 70)
+        x = random.randint(80, screen_width - 70)
+        y = random.randint(80, screen_height - 70)
 
         powerup = random.choice(["aim", "time", "debuff"])
 
@@ -82,6 +82,7 @@ class Player(GameObject):
         super().__init__(path, x, y, x_center, y_center)
 
         self.name = name
+        self.player_id = 1 if name == "p1" else 2
         self.bullet = bullet
         self.time = time
         self.score = 0
@@ -142,10 +143,9 @@ class Player(GameObject):
         self.cursor_visible = False
     
     def draw(self, screen):
-        #super().draw(screen)
         
-        if self.name == "p1" : color = pygame.Color("#F74825")
-        else: color = pygame.Color("#F73BBD")
+        if self.player_id == 1: color = pygame.Color("#39F9D6")
+        else: color = pygame.Color("#721FA3")
     
         if self.last_shot_pos is not None:
             shot_x, shot_y = self.last_shot_pos
@@ -168,7 +168,7 @@ class Target(GameObject):
     def random_pos(screen_width, screen_height,
                     target_width, target_height,
                     existing_targets,
-                    margin=20,
+                    margin=80,
                     min_distance=80):
 
         while True:
